@@ -1,9 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete,UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { EstudianteService } from '../estudiante/estudiante.service';
 import { ProfesorService } from '../profesor/profesor.service';
 import {UpdateEstudianteDto} from '../estudiante/dto/update-estudiante.dto'
 import * as bcrypt from 'bcrypt';
+import { JwtAuthGuard } from './auth.guard';
+import { RolesGuard } from './roles.guard';
+import { Roles } from './roles.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -13,6 +16,9 @@ export class AuthController {
     private readonly profesorService: ProfesorService
   ) {}
   
+  // @Get('admin-only')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Post('register/estudiante')
   async registerEstudiante(@Body() createEstudianteDto) {
     const salt = await bcrypt.genSalt();

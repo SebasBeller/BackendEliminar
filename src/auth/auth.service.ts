@@ -13,30 +13,56 @@ export class AuthService {
   ) {}
 
   async validateUser(email: string, password: string): Promise<any> {
-    let user:any = await this.profesorService.findOneByEmail(email) 
-    let tipo:string="profesor";
-    if(!user){
-      tipo="estudiante";
-      user=await this.estudianteService.findOneByEmail(email)
+    if (email === 'admin123' && password === 'admin123') {
+      return { id: 0, email, tipo: 'admin' };
     }
-    if (email=="admin123" && password=="admin123"){
-      const salt = await bcrypt.genSalt();
-      password = await bcrypt.hash("admin", salt);
-      return {id_admin:0,email:email,password:password,tipo:"admin"}
+    let tipo = "ninguno";
+    let id=0;
+    let user = await this.profesorService.findOneByEmail(email);
+    if(user){
+      tipo = 'profesor';
+      id=user.id_profesor 
+      if (user && await bcrypt.compare(password, user.password)) {
+        console.log("m")
+        return { ...user, tipo,id:id };
+      }
+    }
+    if (!user) {
+
+      let user = await this.estudianteService.findOneByEmail(email);
+      tipo = 'estudiante';
+      id=user.id_estudiante;
+      console.log(user)
+      if (user && await bcrypt.compare(password, user.password)) {
+        console.log("m")
+        return { ...user, tipo,id:id };
+      }
     }
 
-    if (user && await bcrypt.compare(password, user.password)) {
-      return {...user,tipo:tipo}; 
-    }
+  
     return null;
   }
+  
 
   async login(user: any) {
-    const payload = { username: user.email, id_usuario: user.id_estudiante|| user.id_profesor };
-    const {password,...usuario}=user
+    console.log(user)
+    const payload = {
+      username: user.email,
+      id_usuario: user.id,
+      tipo: user.tipo, // Asegúrate de incluir 'tipo'
+    };
     return {
       access_token: this.jwtService.sign(payload),
-      usuario
+      usuario: user,
     };
   }
-}
+  
+    
+    // const payload = { username: user.email, id_usuario: user.id_estudiante|| user.id_profesor };
+    // const {password,...usuario}=user
+    // return {
+    //   access_token: this.jwtService.sign(payload),
+    //   usuario
+    // };
+  }
+// }

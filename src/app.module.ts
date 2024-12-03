@@ -13,6 +13,9 @@ import { AsistenciaModule } from './asistencia/asistencia.module';
 import { InscripcionModule } from './inscripcion/inscripcion.module';
 import { NotaModule } from './nota/nota.module';
 import {AuthModule} from './auth/auth.module'
+import { RolesGuard } from './auth/roles.guard';
+import { APP_GUARD } from '@nestjs/core';
+
 @Module({
   imports: [MateriasModule
     ,TypeOrmModule.forRoot({
@@ -27,6 +30,11 @@ import {AuthModule} from './auth/auth.module'
     }), ParaleloModule, ProfesorModule, MateriaAsignadaProfesorModule, UnidadModule, MaterialModule,  EstudianteModule, AsistenciaModule, InscripcionModule, NotaModule,AuthModule
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService,
+    {
+      provide: APP_GUARD, // Esto lo registra como un Guard global
+      useClass: RolesGuard,
+    },
+  ],
 })
 export class AppModule {}
